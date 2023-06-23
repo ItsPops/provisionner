@@ -1,0 +1,105 @@
+---
+- name: Installing and configurint Nginx and vhosts
+  hosts: web
+  become: true
+  tasks:
+
+    - name: Installing Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Ensure "serv_nginx-user" exists
+      user:
+        name: serv_nginx-user
+        state: present
+
+    - name: Edit Nginx configuration
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: '^user '
+        line: 'user serv_nginx-user;'
+        backup: yes
+
+    - name: Change ownership of /srv/website* to serv_nginx-user
+      file:
+        path: /srv/website*
+        owner: serv_nginx-user
+        recurse: yes
+
+    - name: Comment out server_tokens directive
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: '^(\s*)server_tokens'
+        line: '#\1server_tokens off;'
+
+    - name: Copy website configurations and index files
+      ansible.builtin.copy:
+        src: "./configurations/web/{{ item.name }}.hardening.lan.conf"
+        dest: "/etc/nginx/sites-enabled/{{ item.name }}.hardening.lan.conf"
+        owner: root
+        group: root
+        mode: "0644"
+      loop:
+        - { name: website1 }
+        - { name: website2 }
+        - { name: website3 }
+
+    - name: Create website directories with setgid permission
+      file:
+        path: "/srv/{{ item.name }}"
+        state: directory
+        mode: "2775"
+      loop:
+        - { name: website1 }
+        - { name: website2 }
+        - { name: website3 }
+
+    - name: Copy index.html files to website directories
+      copy:
+        src: "./configurations/web/{{ item.name }}-index.html"
+        dest: "/srv/{{ item.name }}/index.html"
+      loop:
+        - { name: website1 }
+        - { name: website2 }
+        - { name: website3 }
+
+    - name: Copy SSL certificates and keys
+      copy:
+        src: "./capen-ssl/out/server/certs/{{ item.name }}.hardening.lan.crt"
+        dest: "/etc/ssl/certs/{{ item.name }}.hardening.lan.crt"
+      loop:
+        - { name: website1 }
+        - { name: website2 }
+        - { name: website3 }
+
+    - name: Copy SSL private keys
+      copy:
+        src: "./capen-ssl/out/server/keys/{{ item.name }}.hardening.lan.key"
+        dest: "/etc/ssl/private/{{ item.name }}.hardening.lan.key"
+      loop:
+        - { name: website1 }
+        - { name: website2 }
+        - { name: website3 }
+
+    - name: Copy PKI fullchain
+      copy:
+        src: "./capen-ssl/out/ca/certs/hardening_fullchain.pem"
+        dest: "/etc/ssl/certs/hardening_fullchain.pem"
+        
+    - name: Reloading Nginx
+      service:
+        name: nginx
+        state: reloaded
+
+    - name: Disable SSH password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Restart sshd service
+      ansible.builtin.service:
+        name: sshd
+        state: restarted

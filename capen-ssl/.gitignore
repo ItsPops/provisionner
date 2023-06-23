@@ -1,0 +1,9 @@
+*.crt
+*.key
+*.csr
+database/certindex.old*
+database/certserial.old*
+database/certindex.attr.old*
+.DS_Store
+.gitkeep-
+script.py

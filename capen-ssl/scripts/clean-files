@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+rm -f out/ca/certs/*
+rm -f out/ca/csr/*
+rm -f out/ca/keys/*
+rm -f out/ca/keys/.[^.key]*
+rm -f out/server/certs/*
+rm -f out/server/csr/*
+rm -f out/server/keys/*
+rm -f out/server/keys/.[^.key]*
+rm -f out/client/certs/*
+rm -f out/client/csr/*
+rm -f out/client/keys/*
+rm -f out/client/keys/.[^.key]*

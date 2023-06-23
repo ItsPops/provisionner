@@ -1,0 +1,57 @@
+---
+- name: Install BIND9
+  hosts: dns
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Install BIND9 package
+      apt:
+        name: bind9
+        state: present
+      become: true
+
+    - name: Copy local sshd_config to remote
+      ansible.builtin.copy:
+        src: ./configurations/dns/db.hardening.lan
+        dest: /etc/bind/
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy local sshd_config to remote
+      ansible.builtin.copy:
+        src: ./configurations/dns/db.10.168.192.in-addr.arpa
+        dest: /etc/bind/
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy local sshd_config to remote
+      ansible.builtin.copy:
+        src: ./configurations/dns/named.conf.local
+        dest: /etc/bind/
+        owner: root
+        group: root
+        mode: '0644'
+
+
+    - name: Restart bind9 service
+      ansible.builtin.service:
+        name: named
+        state: restarted
+
+    - name: Disable SSH password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Restart sshd service
+      ansible.builtin.service:
+        name: sshd
+        state: restarted

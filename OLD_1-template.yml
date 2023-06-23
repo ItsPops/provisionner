@@ -1,0 +1,42 @@
+---
+- name: Modify sshd_config, add user to group, and restart sshd
+  hosts: template
+  become: true
+  tasks:
+    - name: Backup remote sshd_config
+      ansible.builtin.copy:
+        src: /etc/ssh/sshd_config
+        dest: /etc/ssh/sshd_config.bak
+        owner: root
+        group: root
+        mode: '0644'
+        remote_src: yes
+
+    - name: Copy local sshd_config to remote
+      ansible.builtin.copy:
+        src: ./template/sshd_config
+        dest: /etc/ssh/sshd_config
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+
+    - name: Ensure ssh_users group exists
+      ansible.builtin.group:
+        name: sshgroup
+        state: present
+        
+    - name: Add user to sshgroup group
+      ansible.builtin.user:
+        name: YOUR_USERNAME_HERE
+        groups: sshgroup
+        append: yes
+
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: sshd
+        state: restarted

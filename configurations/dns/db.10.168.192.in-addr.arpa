@@ -1,0 +1,16 @@
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL	604800
+@	IN	SOA	hardening.lan. hardening.ipssi.lan. (
+		     2023062101		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+@	IN	NS	hardening.lan.
+201 IN	PTR	hardening.lan.
+202	IN	PTR	website1.
+202	IN	PTR	website2.
+202	IN	PTR	website3.

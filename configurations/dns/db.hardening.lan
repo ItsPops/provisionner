@@ -1,0 +1,13 @@
+$TTL 86400
+@       IN      SOA     hardening.lan. admin.hardening.lan. (
+                            2023062101 ; Serial
+                            3600       ; Refresh
+                            1800       ; Retry
+                            604800     ; Expire
+                            86400      ; Minimum TTL
+                            )
+@		IN      NS      hardening.lan.
+@		IN	A	192.168.10.201
+website1	IN      A       192.168.10.202
+website2	IN      A       192.168.10.202
+website3    IN      A       192.168.10.202
